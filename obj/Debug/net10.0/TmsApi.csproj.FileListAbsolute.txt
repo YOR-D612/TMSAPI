@@ -12,6 +12,7 @@ C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\Tms
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.AssemblyInfo.cs
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.csproj.CoreCompileInputs.cache
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.sourcelink.json
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -26,4 +27,3 @@ C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\Tms
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.pdb
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.genruntimeconfig.cache
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\ref\TmsApi.dll
-C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.sourcelink.json
