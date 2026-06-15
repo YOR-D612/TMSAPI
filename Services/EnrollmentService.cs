@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-namespace TmsApi.Services;
+using TmsApi.Services;
 
 public interface IEnrollmentService
 {

@@ -27,3 +27,9 @@ C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\Tms
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.pdb
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.genruntimeconfig.cache
 C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\ref\TmsApi.dll
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\bin\Debug\net10.0\Microsoft.OpenApi.dll
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.csproj.AssemblyReference.cache
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\obj\Debug\net10.0\TmsApi.csproj.Up2Date
+C:\Users\ADMIN\Documents\GitHub\M3-Version-Control-and-Collaborative-Tooling\TmsApi\bin\Debug\net10.0\Scalar.AspNetCore.dll
