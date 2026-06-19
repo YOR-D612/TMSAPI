@@ -36,3 +36,13 @@ public async Task<IActionResult> Delete(string id)
 public record CreateEnrollmentRequest(
     string StudentId,
     string CourseCode);
+    [ApiController]
+[Route("api/[controller]")]
+public class EnrollmentController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult Enroll()
+    {
+        return Ok("Enrolled successfully");
+    }
+}
