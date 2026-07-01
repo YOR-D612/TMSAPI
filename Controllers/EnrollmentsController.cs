@@ -1,48 +1,86 @@
 using Microsoft.AspNetCore.Mvc;
-[ApiController]
-[Route("api/enrollments")]
-public class EnrollmentsController(IEnrollmentService enrollmentService) : ControllerBase
-{
-// GET /api/enrollments returns all enrollment records
-[HttpGet]
-public async Task<IActionResult> GetAll()
-{
-var enrollments = await enrollmentService.GetAllAsync();
-return Ok(enrollments);
-}
-// GET /api/enrollments/{id} returns one or 404
-[HttpGet("{id}")]
-public async Task<IActionResult> GetById(string id)
-{
-var record = await enrollmentService.GetByIdAsync(id);
-return record is not null ? Ok(record) : NotFound();
-}
-[HttpPost]
-public async Task<IActionResult> Create([FromBody] CreateEnrollmentRequest request)
-{
-var record = await enrollmentService.EnrollAsync(request.StudentId, request.CourseCode);
-return CreatedAtAction(nameof(GetById), new { id = record.Id }, record);
-}
-[HttpDelete("{id}")]
-public async Task<IActionResult> Delete(string id)
-{
-    var deleted = await enrollmentService.DeleteAsync(id);
+using Microsoft.EntityFrameworkCore;
+using TmsApi.Data;
+using TmsApi.Entities;
 
-    return deleted
-        ? NoContent()
-        : NotFound();
-}
-}
-public record CreateEnrollmentRequest(
-    string StudentId,
-    string CourseCode);
-    [ApiController]
+namespace TmsApi.Controllers;
+
+[ApiController]
 [Route("api/[controller]")]
-public class EnrollmentController : ControllerBase
+public class EnrollmentsController : ControllerBase
 {
-    [HttpPost]
-    public IActionResult Enroll()
+    private readonly TmsDbContext _db;
+
+    public EnrollmentsController(TmsDbContext db)
     {
-        return Ok("Enrolled successfully");
+        _db = db;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var enrollments = await _db.Enrollments
+            .AsNoTracking()
+            .Include(e => e.Student)
+            .Include(e => e.Course)
+            .ToListAsync(cancellationToken);
+
+        return Ok(enrollments);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+    {
+        var enrollment = await _db.Enrollments
+            .AsNoTracking()
+            .Include(e => e.Student)
+            .Include(e => e.Course)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        if (enrollment == null)
+            return NotFound();
+
+        return Ok(enrollment);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(Enrollment enrollment, CancellationToken cancellationToken)
+    {
+        _db.Enrollments.Add(enrollment);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(enrollment);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, Enrollment updated, CancellationToken cancellationToken)
+    {
+        var existing = await _db.Enrollments
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        if (existing == null)
+            return NotFound();
+
+        existing.StudentId = updated.StudentId;
+        existing.CourseId = updated.CourseId;
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var enrollment = await _db.Enrollments
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        if (enrollment == null)
+            return NotFound();
+
+        _db.Enrollments.Remove(enrollment);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return NoContent();
     }
 }
