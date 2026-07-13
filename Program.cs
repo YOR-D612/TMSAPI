@@ -38,9 +38,21 @@ builder.Host.UseDefaultServiceProvider(options =>
     options.ValidateOnBuild = true;
 });
 
-
+builder.Services.AddScoped<ICourseService, CourseService>();
 var app = builder.Build();
+app.UseExceptionHandler();
 
+app.UseStatusCodePages();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
+
+app.MapControllers();
+
+app.Run();
 app.UseMiddleware<RequestLoggingMiddleware>();
 // Development tools
 if (app.Environment.IsDevelopment())
@@ -121,19 +133,19 @@ using (var scope = app.Services.CreateScope())
             {
                 Code = "CS-101",
                 Title = "Introduction to Computer Science",
-                Capacity = 30
+                MaxCapacity = 30
             },
             new()
             {
                 Code = "CS-201",
                 Title = "Data Structures and Algorithms",
-                Capacity = 25
+                MaxCapacity = 25
             },
             new()
             {
                 Code = "MAT-101",
                 Title = "Calculus I",
-                Capacity = 40
+                MaxCapacity = 40
             }
         };
 

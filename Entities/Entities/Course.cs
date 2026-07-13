@@ -8,8 +8,7 @@ public class Course
 
     public required string Title { get; set; }
 
-    public int Capacity { get; set; }
-public int Year { get; set; }
-    public ICollection<Enrollment> Enrollments { get; set; }
-        = new List<Enrollment>();
+    public int MaxCapacity { get; set; }
+
+    public ICollection<Enrollment> Enrollments { get; set; } = [];
 }
