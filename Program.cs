@@ -5,13 +5,19 @@ using TmsApi.Configuration;
 using TmsApi.Data;
 using TmsApi.Persistence;
 using TmsApi.Services;
-
+using Asp.Versioning;
 var builder = WebApplication.CreateBuilder(args);
 
 //
 // Services
 //
 builder.Services.AddControllers();
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+});
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddDbContext<TmsDbContext>(options =>

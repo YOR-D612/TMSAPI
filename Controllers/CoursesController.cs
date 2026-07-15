@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using TmsApi.Dtos;
 using TmsApi.Services;
+using Asp.Versioning;
 
 namespace TmsApi.Controllers;
 
 [ApiController]
-[Route("api/courses")]
+[ApiVersion("1.0", Deprecated = true)]
+[Route("api/v{version:apiVersion}/courses")]
 [Tags("Courses")]
 [Produces("application/json")]
 [ProducesResponseType(
