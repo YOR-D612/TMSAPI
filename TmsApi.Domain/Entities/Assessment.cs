@@ -1,3 +1,4 @@
+using TmsApi.Domain.Entities;
 
 namespace TmsApi.Domain.Entities;
 public class Assessment

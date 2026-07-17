@@ -1,5 +1,6 @@
 using System;
 using TmsApi.Domain.Entities;
+
 namespace TmsApi.Domain.Entities;
 public class Certificate
 {
