@@ -1,3 +1,6 @@
+
+namespace TmsApi.Application.DTOs;
+
 public class PagedResponse<T>
 {
     public required List<T> Items { get; set; }

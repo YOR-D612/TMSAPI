@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-
+namespace TmsApi.Application.DTOs;
 public class CreateStudentRequest
 {
     [Required]

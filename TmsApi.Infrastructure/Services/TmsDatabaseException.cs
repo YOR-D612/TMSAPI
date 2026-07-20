@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Application.Interfaces;
 using TmsApi.Infrastructure.Services;
@@ -6,9 +7,11 @@ using TmsApi.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 using TmsApi.Application.DTOs;
-
-public class PaymentOptions
+namespace TmsApi.Application.Interfaces;
+public class TmsDatabaseException : Exception
 {
-    public string Provider { get; set; } = string.Empty;
-    public string ApiKey { get; set; } = string.Empty;
+    public TmsDatabaseException(string message)
+        : base(message)
+    {
+    }
 }

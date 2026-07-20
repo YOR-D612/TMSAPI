@@ -2,24 +2,38 @@ using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Scalar.AspNetCore;
-using TmsApi.Infrastructure.Services;
+
+using TmsApi.Application.Interfaces;
 using TmsApi.Infrastructure.Persistence;
+using TmsApi.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//
+// Controllers
+//
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IStudentService, StudentService>();
+//
+// Services
+//
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
+
+//
+// Database
+//
 builder.Services.AddDbContext<TmsDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("TmsDatabase"))
     .LogTo(Console.WriteLine, LogLevel.Information)
     .EnableSensitiveDataLogging());
 
+//
+// OpenAPI
+//
 builder.Services.AddOpenApi("v1", options =>
 {
     options.ShouldInclude = description =>
@@ -32,6 +46,9 @@ builder.Services.AddOpenApi("v2", options =>
         description.GroupName == "v2";
 });
 
+//
+// API Versioning
+//
 builder.Services
     .AddApiVersioning(options =>
     {
@@ -45,23 +62,20 @@ builder.Services
         options.GroupNameFormat = "'v'VVV";
         options.SubstituteApiVersionInUrl = true;
     });
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<IAssessmentService, AssessmentService>();
-builder.Services.AddDbContext<TmsDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("TmsDatabase"))
-    .LogTo(Console.WriteLine, LogLevel.Information)
-    .EnableSensitiveDataLogging());
 
-builder.Services.AddScoped<ICourseService, CourseService>();
-builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
-
+//
+// Authorization
+//
 builder.Services.AddAuthorization();
 
+//
+// Problem Details
+//
 builder.Services.AddProblemDetails();
 
-
-
+//
+// Options
+//
 builder.Services
     .AddOptions<PaymentOptions>()
     .BindConfiguration("Payments")
@@ -69,7 +83,7 @@ builder.Services
     .ValidateOnStart();
 
 //
-// Validate DI
+// Validate Dependency Injection
 //
 builder.Host.UseDefaultServiceProvider(options =>
 {
@@ -85,10 +99,6 @@ var app = builder.Build();
 app.UseExceptionHandler();
 
 app.UseStatusCodePages();
-
-//
-// Development tools
-//
 
 //
 // Middleware
@@ -114,7 +124,7 @@ app.MapGet("/api/error", () =>
 });
 
 //
-// Seed Database (Development only)
+// Development tools
 //
 if (app.Environment.IsDevelopment())
 {
@@ -132,5 +142,5 @@ if (app.Environment.IsDevelopment())
         options.AddDocument("v2", "API Version 2.0");
     });
 }
-//
+
 app.Run();

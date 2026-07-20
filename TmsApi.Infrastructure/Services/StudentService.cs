@@ -1,10 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+
+using TmsApi.Application.DTOs;
 using TmsApi.Application.Interfaces;
+
 using TmsApi.Domain.Entities;
+
 using TmsApi.Infrastructure.Persistence;
-
-
 namespace TmsApi.Infrastructure.Services;
-
 public class StudentService : IStudentService
 {
     private readonly TmsDbContext db;

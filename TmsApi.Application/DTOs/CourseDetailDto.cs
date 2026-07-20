@@ -1,5 +1,4 @@
-namespace TmsApi.Dtos;
-
+namespace TmsApi.Application.DTOs;
 public record CourseDetailDto
 {
     public required int Id { get; init; }

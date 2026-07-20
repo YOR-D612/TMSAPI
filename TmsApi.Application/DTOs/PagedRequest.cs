@@ -1,3 +1,6 @@
+
+namespace TmsApi.Application.DTOs;
+
 public class PagedRequest
 {
     private int _pageSize = 10;

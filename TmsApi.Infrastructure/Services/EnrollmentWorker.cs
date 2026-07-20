@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-
-namespace TmsApi.Services;
+using Microsoft.Extensions.Logging;
+using TmsApi.Domain.Entities;
+namespace TmsApi.Application.Interfaces;
 
 public class EnrollmentWorker
 {

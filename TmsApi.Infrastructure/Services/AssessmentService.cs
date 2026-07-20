@@ -2,9 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using TmsApi.Application.Interfaces;
 using TmsApi.Infrastructure.Services;
 using TmsApi.Infrastructure.Persistence;
+using TmsApi.Application.DTOs;
+using Microsoft.Extensions.Logging;
+using TmsApi.Domain.Entities;
 
-
-namespace TmsApi.Infrastructure.Services;
+namespace TmsApi.Application.Interfaces;
 
 public class AssessmentService(TmsDbContext db) : IAssessmentService
 {

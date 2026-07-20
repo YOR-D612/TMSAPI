@@ -1,6 +1,7 @@
-using TmsApi.Dtos;
+using TmsApi.Application.DTOs;
 
-namespace TmsApi.Services;
+
+namespace TmsApi.Application.Interfaces;
 
 public interface IAssessmentService
 {
