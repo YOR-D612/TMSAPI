@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 using TmsApi.Application.DTOs;
 using TmsApi.Application.Interfaces;
-using Microsoft.Extensions.Logging;
-
 using TmsApi.Domain.Entities;
-
 using TmsApi.Infrastructure.Persistence;
+
 namespace TmsApi.Infrastructure.Services;
 
 public class EnrollmentService(
@@ -67,5 +66,36 @@ public class EnrollmentService(
             enrollment.CourseId);
 
         return (await GetByIdAsync(courseId, enrollment.Id, ct))!;
+    }
+
+    public async Task<bool> ExistsAsync(
+        int studentId,
+        string courseCode,
+        CancellationToken ct)
+    {
+        return await context.Enrollments
+            .Include(e => e.Course)
+            .AnyAsync(
+                e => e.StudentId == studentId &&
+                     e.Course.Code == courseCode,
+                ct);
+    }
+
+    public async Task AddAsync(
+        Enrollment enrollment,
+        CancellationToken ct)
+    {
+        context.Enrollments.Add(enrollment);
+        await context.SaveChangesAsync(ct);
+    }
+
+    public async Task<IEnumerable<Enrollment>> GetByStudentIdAsync(
+        int studentId,
+        CancellationToken ct)
+    {
+        return await context.Enrollments
+            .Include(e => e.Course)
+            .Where(e => e.StudentId == studentId)
+            .ToListAsync(ct);
     }
 }

@@ -1,4 +1,5 @@
 using TmsApi.Application.DTOs;
+using TmsApi.Domain.Entities;
 namespace TmsApi.Application.Interfaces;
 
 public interface IEnrollmentService
@@ -16,4 +17,16 @@ public interface IEnrollmentService
         int courseId,
         EnrollStudentRequest request,
         CancellationToken ct);
+        Task<bool> ExistsAsync(
+    int studentId,
+    string courseCode,
+    CancellationToken ct);
+
+Task AddAsync(
+    Enrollment enrollment,
+    CancellationToken ct);
+
+Task<IEnumerable<Enrollment>> GetByStudentIdAsync(
+    int studentId,
+    CancellationToken ct);
 }

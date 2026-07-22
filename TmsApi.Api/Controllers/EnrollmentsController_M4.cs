@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TmsApi.Data;
-using TmsApi.Entities;
+using TmsApi.Infrastructure.Persistence;
+using TmsApi.Domain.Entities;
 
 namespace TmsApi.Controllers;
 
