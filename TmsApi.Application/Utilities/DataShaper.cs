@@ -1,0 +1,70 @@
+using System.Reflection;
+
+namespace TmsApi.Application.Utilities;
+
+public static class DataShaper
+{
+    public static IEnumerable<Dictionary<string, object?>> ShapeData<T>(
+        this IEnumerable<T> source,
+        string? fields,
+        ISet<string> allowedFields)
+    {
+        var properties = typeof(T)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => allowedFields.Any(
+                x => string.Equals(
+                    x,
+                    p.Name,
+                    StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+
+        if (string.IsNullOrWhiteSpace(fields))
+        {
+            return source.Select(e =>
+                properties.ToDictionary(
+                    p => p.Name,
+                    p => p.GetValue(e)));
+        }
+
+
+        var requested = fields
+            .Split(
+                ',',
+                StringSplitOptions.TrimEntries |
+                StringSplitOptions.RemoveEmptyEntries)
+            .ToList();
+
+
+        var unknown = requested
+            .Where(f => !allowedFields.Any(
+                x => string.Equals(
+                    x,
+                    f,
+                    StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+
+        if (unknown.Count > 0)
+        {
+            throw new ArgumentException(
+                $"Unknown field(s): {string.Join(", ", unknown)}. " +
+                $"Allowed fields: {string.Join(", ", allowedFields)}.");
+        }
+
+
+        var picked = properties
+            .Where(p => requested.Any(
+                x => string.Equals(
+                    x,
+                    p.Name,
+                    StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+
+        return source.Select(e =>
+            picked.ToDictionary(
+                p => p.Name,
+                p => p.GetValue(e)));
+    }
+}

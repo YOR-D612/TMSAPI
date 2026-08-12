@@ -1,26 +1,52 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using TmsApi.Application.Interfaces;
 
-namespace TmsApi.Controllers;
+
+namespace TmsApi.Api.Controllers.V2;
+
 
 [ApiController]
-[Route("api/certificates")]
-public class CertificatesController : ControllerBase
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/certificates")]
+public sealed class CertificatesController(
+    ICertificateService certificates)
+    : ControllerBase
 {
-    [HttpGet]
-    public IActionResult GetCertificates()
-    {
-        return Ok("Certificates endpoint is working.");
-    }
 
-    [HttpGet("{id:int}")]
-    public IActionResult GetCertificateById(int id)
-    {
-        return Ok($"Certificate {id}");
-    }
+    public sealed record IssueRequest(
+        int StudentId,
+        string CourseCode);
+
+
 
     [HttpPost]
-    public IActionResult CreateCertificate()
+    public async Task<IActionResult> Issue(
+        IssueRequest request,
+        CancellationToken ct)
     {
-        return Ok();
+        try
+        {
+            var result =
+                await certificates.IssueCertificateAsync(
+                    request.StudentId,
+                    request.CourseCode,
+                    ct);
+
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Problem(
+                statusCode:
+                    StatusCodes.Status400BadRequest,
+
+                title:
+                    "Certificate request rejected",
+
+                detail:
+                    ex.Message);
+        }
     }
 }

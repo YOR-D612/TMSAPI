@@ -16,11 +16,56 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using TmsApi.Api.RateLimiting;
+using Microsoft.AspNetCore.SignalR;
+using TmsApi.Api.Hubs;
+using TmsApi.Application.Hubs;
+using TmsApi.Infrastructure.Transcripts;
+using System.Threading.Channels;
+using TmsApi.Application.Transcripts;
+using TmsApi.Infrastructure.Workers;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
+using Polly.Timeout;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using TmsApi.Api.Notifications;
+using TmsApi.Application.Notifications;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 var builder = WebApplication.CreateBuilder(args);
 
 //
 // Controllers
 //
+builder.Services.AddSingleton<ITranscriptStatusStore, InMemoryTranscriptStatusStore>();
+
+builder.Services.AddSingleton<ITranscriptNotificationService,
+    SignalRTranscriptNotificationService>();
+
+builder.Services.AddHostedService<TranscriptWorker>();
+
+builder.Services.AddSingleton(
+    Channel.CreateBounded<TranscriptRequest>(
+        new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.Wait
+        }));
+        builder.Services.AddSingleton<
+    ITranscriptStatusStore,
+    InMemoryTranscriptStatusStore>();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<
+    ITranscriptNotificationService,
+    SignalRTranscriptNotificationService>();
+builder.Services.AddHostedService<TranscriptWorker>();
+builder.Services.AddSingleton(
+    Channel.CreateBounded<TranscriptRequest>(
+        new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.Wait
+        }));
 builder.Services.AddControllers();
 builder.Services.AddRateLimiter(options =>
 {
@@ -173,7 +218,7 @@ builder.Services.AddMediatR(cfg =>
 // FluentValidation
 //
 builder.Services.AddValidatorsFromAssembly(typeof(EnrollStudentValidator).Assembly);
-
+builder.Services.AddHostedService<TranscriptWorker>();
 //
 // MediatR Pipeline Behaviors
 // Logging FIRST
@@ -223,6 +268,8 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<ICachedCourseService, CachedCourseService>();
+builder.Services.AddSingleton<ITranscriptStatusStore,
+    InMemoryTranscriptStatusStore>();
 //
 // API Versioning
 //
@@ -276,8 +323,156 @@ builder.Services.AddHybridCache(options =>
         LocalCacheExpiration = TimeSpan.FromMinutes(2)
     };
 });
-var app = builder.Build();
+builder.Services.AddResiliencePipeline(
+    "certificate-api",
+    pipeline =>
+    {
+        pipeline
 
+        // Timeout first
+        .AddTimeout(TimeSpan.FromSeconds(5))
+
+
+        // Circuit breaker
+        .AddCircuitBreaker(
+            new CircuitBreakerStrategyOptions
+            {
+                FailureRatio = 0.5,
+                MinimumThroughput = 10,
+                SamplingDuration = TimeSpan.FromSeconds(30),
+                BreakDuration = TimeSpan.FromSeconds(15),
+
+                ShouldHandle =
+                    new PredicateBuilder()
+                        .Handle<HttpRequestException>()
+                        .Handle<TimeoutRejectedException>(),
+
+
+                OnOpened = args =>
+                {
+                    Console.WriteLine(
+                        "Circuit OPENED");
+
+                    return ValueTask.CompletedTask;
+                },
+
+
+                OnClosed = args =>
+                {
+                    Console.WriteLine(
+                        "Circuit CLOSED");
+
+                    return ValueTask.CompletedTask;
+                }
+            })
+
+
+        // Retry
+        .AddRetry(
+            new RetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+
+                Delay =
+                    TimeSpan.FromMilliseconds(500),
+
+                BackoffType =
+                    DelayBackoffType.Exponential,
+
+                UseJitter = true,
+
+
+                ShouldHandle =
+                    new PredicateBuilder()
+                        .Handle<HttpRequestException>()
+                        .Handle<TimeoutRejectedException>(),
+
+
+                OnRetry = args =>
+                {
+                    Console.WriteLine(
+                        $"Retry #{args.AttemptNumber} " +
+                        $"after {args.RetryDelay.TotalMilliseconds}ms");
+
+                    return ValueTask.CompletedTask;
+                }
+            });
+    });
+    builder.Services
+    .AddHealthChecks()
+
+    .AddCheck(
+        "self",
+        () => HealthCheckResult.Healthy("alive"),
+        tags: new[] { "live" })
+
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("TmsDatabase")!,
+        name: "postgres",
+        tags: new[] { "ready" });
+        builder.Logging.AddJsonConsole(options =>
+{
+    options.IncludeScopes = true;
+
+    options.JsonWriterOptions =
+        new()
+        {
+            Indented = false
+        };
+});
+const string ServiceName = "tms-api";
+
+builder.Services
+    .AddOpenTelemetry()
+
+    .ConfigureResource(resource =>
+        resource.AddService(
+            serviceName: ServiceName,
+            serviceVersion: "1.0.0"))
+
+    .WithTracing(tracing =>
+        tracing
+
+            .AddSource(ServiceName)
+
+            .AddAspNetCoreInstrumentation()
+
+            .AddHttpClientInstrumentation()
+
+            .AddOtlpExporter())
+
+    .WithMetrics(metrics =>
+        metrics
+
+            .AddMeter(ServiceName)
+
+            .AddAspNetCoreInstrumentation()
+
+            .AddHttpClientInstrumentation()
+
+           
+
+            .AddOtlpExporter());
+var app = builder.Build();
+app.MapHub<TmsHub>("/hubs/tms");
+app.MapHealthChecks(
+    "/health/live",
+    new HealthCheckOptions
+    {
+        Predicate = check =>
+            check.Tags.Contains("live")
+    })
+    .DisableRateLimiting();
+
+app.MapHealthChecks(
+    "/health/ready",
+    new HealthCheckOptions
+    {
+        Predicate = check =>
+            check.Tags.Contains("ready")
+    })
+    .DisableRateLimiting();
+builder.Services.AddSignalR();
 //
 // Exception Handler
 //
@@ -300,7 +495,7 @@ app.UseRateLimiter();
 // Authorization
 //
 app.UseAuthorization();
-
+app.MapHub<TmsHub>("/hubs/tms");
 //
 // OpenAPI + Scalar
 //
@@ -330,5 +525,54 @@ app.MapGet("/api/error", () =>
 {
     throw new Exception("Simulated database failure");
 });
+var attempts = 0;
 
+
+app.MapPost(
+    "/fake/certificates",
+    async () =>
+    {
+        var n =
+            Interlocked.Increment(ref attempts);
+
+
+        if (n % 7 == 0)
+        {
+            await Task.Delay(
+                TimeSpan.FromSeconds(20));
+
+            return Results.Ok(
+                new
+                {
+                    Status = "issued",
+                    Attempt = n
+                });
+        }
+
+
+        if (n % 3 != 0)
+        {
+            return Results.StatusCode(
+                StatusCodes.Status503ServiceUnavailable);
+        }
+
+
+        if (n % 11 == 0)
+        {
+            return Results.BadRequest(
+                new
+                {
+                    error = "validation_failed"
+                });
+        }
+
+
+        return Results.Ok(
+            new
+            {
+                Status = "issued",
+                Attempt = n
+            });
+    })
+    .WithTags("lab-fixtures");
 app.Run();
